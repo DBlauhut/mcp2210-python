@@ -527,6 +527,7 @@ class Mcp2210(object):
         self._usb_key_parameter = Mcp2210USBKeyParameters()
 
         self._get_usb_manufacturer_name()
+        self._get_usb_product_name()
 
         self._gpio_settings_needs_update = False
         self._gpio_direction_needs_update = False
@@ -614,10 +615,20 @@ class Mcp2210(object):
         usb_string_descriptor_id = response[5]
         assert usb_string_descriptor_id  == 0x03
         name = response[6:6+name_length-2].decode('utf-16le')
-        self._usb_manufactur_name = name
+        self._usb_manufacturer_name = name
+
+    def _set_usb_manufacturer_name(self):
+        """
+        
+        """
+        packed = self._usb_manufacturer_name.encode('utf-16le')
+        zero_end = bytes([0x00, 0x00])
+        request = bytes([ Mcp2210Commands.SET_NVRAM_PARAMETERS, Mcp2210NVRAMTarget.USB_MANUFACTURER_NAME, 0x00, 0x00, len(packed)+len(zero_end), 0x03 ])
+
+        self._execute_command(request + packed + zero_end)
 
         
-    def _get_usb_manufacturer_name(self):
+    def _get_usb_product_name(self):
         response = self._execute_command(bytes([Mcp2210Commands.GET_NVRAM_PARAMETERS, Mcp2210NVRAMTarget.USB_PRODUCT_NAME]))
 
         name_length = response[4]
@@ -626,7 +637,16 @@ class Mcp2210(object):
         name = response[6:6+name_length-2].decode('utf-16le')
         self._usb_product_name = name
 
-       
+    def _set_usb_product_name(self):
+        """
+        
+        """
+        packed = self._usb_product_name.encode('utf-16le')
+        zero_end = bytes([0x00, 0x00])
+        request = bytes([ Mcp2210Commands.SET_NVRAM_PARAMETERS, Mcp2210NVRAMTarget.USB_PRODUCT_NAME, 0x00, 0x00, len(packed)+len(zero_end), 0x03 ])
+
+        self._execute_command(request + packed + zero_end)
+
 
 
     def _get_spi_configuration(self):
